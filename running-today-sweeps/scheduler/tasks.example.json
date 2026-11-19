@@ -1,0 +1,43 @@
+[
+  {
+    "name": "Today: morning sweep",
+    "description": "Weekdays at 7:00: an unattended agent session ranks the day on the Today board and writes its note (running-today-sweeps).",
+    "type": "cron",
+    "cronExpr": "0 7 * * 1-5",
+    "action": {
+      "type": "exec",
+      "target": "@BUN@",
+      "payload": {
+        "args": ["@SKILL_DIR@/scripts/sweep.ts", "--cwd", "@CWD@"],
+        "timeoutMs": 120000,
+        "env": { "PATH": "@PATH@" }
+      }
+    },
+    "missedPolicy": "fire_once",
+    "startDeadlineSeconds": 10800,
+    "concurrency": "skip_if_running",
+    "retries": 0,
+    "alertAfterFailures": 1,
+    "tags": ["today-sweeps"]
+  },
+  {
+    "name": "Today: day refresh",
+    "description": "Every 30 minutes from 8:00 to 17:30 on weekdays: rewrites the note when the board has moved on, and fails (alerting you) when the morning note or a refresh didn't land (running-today-sweeps).",
+    "type": "cron",
+    "cronExpr": "*/30 8-17 * * 1-5",
+    "action": {
+      "type": "exec",
+      "target": "@BUN@",
+      "payload": {
+        "args": ["@SKILL_DIR@/scripts/refresh.ts", "--cwd", "@CWD@", "--note-deadline", "9"],
+        "timeoutMs": 120000,
+        "env": { "PATH": "@PATH@" }
+      }
+    },
+    "missedPolicy": "skip",
+    "concurrency": "skip_if_running",
+    "retries": 0,
+    "alertAfterFailures": 2,
+    "tags": ["today-sweeps"]
+  }
+]
